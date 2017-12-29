@@ -10,19 +10,18 @@ def cartesian2spherical(x, y, z):
     return r, theta, phi
 
 
-def mollweide(longitude, latitude, central_meridian=0):
-    R = 1
+def mollweide(longitude, latitude, central_meridian=0, radius=1):
+    def f(l):
+        return 2 * l + np.sin(2 * l) - np.pi * np.sin(latitude)
 
-    def f(x):
-        return 2 * x + np.sin(2*x) - np.pi * np.sin(latitude)
-
-    def df(x):
-        return 2 + 2 * np.cos(2*x)
+    def df(l):
+        return 2 + 2 * np.cos(2 * l)
 
     theta = newton(f, latitude, df)
-    x = R * (2 * np.sqrt(2) / np.pi) * (longitude - central_meridian) * np.cos(theta)
-    y = R * np.sqrt(2) * np.sin(theta)
-    return (x, y)
+
+    x = radius * (2 * np.sqrt(2) / np.pi) * (longitude - central_meridian) * np.cos(theta)
+    y = radius * np.sqrt(2) * np.sin(theta)
+    return x, y
 
 
 def aitoff(longitude, latitude, central_meridian=0):
@@ -32,4 +31,4 @@ def aitoff(longitude, latitude, central_meridian=0):
     a = np.sinc(aa)
     x = 2 * np.cos(p) * np.sin(l) / a
     y = np.sin(p) / a
-    return (x, y)
+    return x, y
