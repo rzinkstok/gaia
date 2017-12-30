@@ -1,5 +1,6 @@
 import numpy as np
 import datetime
+import sunpy.sun as sun
 
 
 EPOCH_J2000 = datetime.datetime(2000, 1, 1, 12, 0, 0)
@@ -31,9 +32,20 @@ def solar_apparent_longitude(dt):
     return solar_distance, solar_longitude, derivative_solar_longitude
 
 
+def dms2rad(dms):
+    return  np.deg2rad(dms[0] + dms[1] / 60.0 + dms[2] / (60 * 60.0))
+
+
+def solar_apparent_longitude2(dt):
+    deltat = datetime.timedelta(days=1)
+    l = dms2rad(sun.apparent_longitude(dt).dms)
+    l1 = dms2rad(sun.apparent_longitude(dt - deltat).dms)
+    l2 = dms2rad(sun.apparent_longitude(dt + deltat).dms)
+    dl = 0.5 * (l2 - l1)
+    return None, l, dl
+
+
 if __name__ == "__main__":
-    import sunpy.sun as sun
     d = datetime.datetime.now() + datetime.timedelta(days=0)
     print solar_apparent_longitude(d)[1]
-    l = sun.apparent_longitude(d).dms
-    print np.deg2rad(l[0] + l[1]/60.0 + l[2]/(60*60.0))
+    print solar_apparent_longitude2(d)[1]
