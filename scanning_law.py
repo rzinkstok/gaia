@@ -14,14 +14,17 @@ SOLAR_ASPECT_ANGLE = np.deg2rad(45.0)
 INERTIAL_SPIN_RATE = np.deg2rad(60.0/3600) * 86400 # rad per day
 
 
-def scan_direction(solar_longitude, nu, omega):
+def scan_directions(solar_longitude, nu, omega):
     # rotate around axis 3, angle solar_longitude
     q1 = Quaternion().from_axis_angle((0, 0, 1), solar_longitude)
+
     # rotate around axis 1, angle 90 - nu
     q2 = Quaternion().from_axis_angle((1, 0, 0), np.pi/2.0 - nu)
+
     # rotate around axis 2, angle 90 - SOLAR_ASPECT_ANGLE
     q3 = Quaternion().from_axis_angle((0, 1, 0), np.pi/2.0 - SOLAR_ASPECT_ANGLE)
     #q3 = Quaternion().from_axis_angle((0, -1, 0), SOLAR_ASPECT_ANGLE)
+
     # rotate around axis 3, angle omega
     q4 = Quaternion().from_axis_angle((0, 0, 1), omega)
 
@@ -29,29 +32,25 @@ def scan_direction(solar_longitude, nu, omega):
     q123 = q12 * q3
     q = q123 * q4
 
-    p = q.apply(np.array([1, 0, 0]))
-    r, theta, phi = cartesian2spherical(*p)
-    return theta, phi
+    p1 = q123.apply(np.array([1, 0, 0]))
+    p2 = q.apply(np.array([1, 0, 0]))
+
+    # Calculate the precession direction
+    r1, theta1, phi1 = cartesian2spherical(*p1)
+
+    # Calculate the scan direction
+    r2, theta2, phi2 = cartesian2spherical(*p2)
+
+    return theta1, phi1, theta2, phi2
 
 
-def calculate_scan_directions(ts, nus, omegas, start_datetime):
-    solar_longitudes = [solar_apparent_longitude(start_datetime + datetime.timedelta(days=t))[1] for t in ts]
-    return [scan_direction(solar_longitude, nu, omega) for solar_longitude, nu, omega in zip(solar_longitudes, nus, omegas)]
-
-
-def density_plot_aitoff(spherical_points):
-    plot_density_x = []
-    plot_density_y = []
-    for theta, phi in spherical_points:
-        phi -= 0.5 * np.pi
-        mx, my = aitoff(theta, phi)
-        plot_density_x.append(mx)
-        plot_density_y.append(my)
-    plt.hist2d(plot_density_x, plot_density_y, (1200, 600), cmap=plt.cm.jet)
-    plt.colorbar()
-    #plt.axes().set_aspect('equal', 'datalim')
-
-    plt.show()
+def calculate_scan_directions(ts, nus, omegas, start_datetime, filename):
+    with open(filename, "w") as fp:
+        for t, nu, omega in zip(ts, nus, omegas):
+            tt = start_datetime + datetime.timedelta(days=t)
+            solar_longitude = solar_apparent_longitude(tt)[1]
+            theta1, phi1, theta2, phi2 = scan_directions(solar_longitude, nu, omega)
+            fp.write("{},{},{},{},{},{},{},{}\n".format(t, solar_longitude, nu, omega, theta1, phi1, theta2, phi2))
 
 
 def nsl_derivative(y, t, start_datetime):
@@ -63,7 +62,7 @@ def nsl_derivative(y, t, start_datetime):
     return np.array([d1, d2])
 
 
-def run():
+def calculate(filename):
     initial_precession_phase = 0.0
     initial_spin_phase = 0.0
     y = np.array([initial_precession_phase, initial_spin_phase])
@@ -72,7 +71,6 @@ def run():
     dt = 0.0001
     tmax = 5*365.25
     nt = int(round(tmax/dt))+1
-    print nt
     t = np.linspace(t0, tmax, nt)
     start_dt = datetime.datetime(2000, 1, 1, 0, 0, 0)
 
@@ -80,11 +78,41 @@ def run():
     sol = odeint(nsl_derivative, y, t, args=(start_dt,))
 
     print "Calculating scan directions"
-    scan_directions = calculate_scan_directions(t, sol[:, 0], sol[:, 1], start_dt)
+    calculate_scan_directions(t, sol[:, 0], sol[:, 1], start_dt, filename)
 
+
+def plot(filename):
     print "Plotting scan directions"
-    density_plot_aitoff(scan_directions)
+    plot_density_x = []
+    plot_density_y = []
+
+    print "Reading file"
+    with open(filename, "r") as fp:
+        lines = fp.readlines()
+        nlines = len(lines)
+        for i, l in enumerate(lines):
+            if i%100000 == 0:
+                print "Progress: {:.2f}%".format(100.0*float(i)/nlines)
+            parts = [float(x) for x in l.split(",")]
+            theta, phi = parts[6:8]
+            phi -= 0.5 * np.pi
+            mx, my = aitoff(theta, phi)
+            plot_density_x.append(mx)
+            plot_density_y.append(my)
+
+    print "Plotting histogram"
+    plt.figure(figsize=(7.8, 4))
+    plt.hist2d(plot_density_x, plot_density_y, (1200, 600), cmap=plt.cm.jet)
+    plt.colorbar()
+    plt.xlim(-np.pi, np.pi)
+    plt.ylim(-np.pi/2, np.pi/2)
+    plt.axes().set_aspect(4/np.pi)
+    plt.savefig("results.png")
+    plt.show()
+
 
 
 if __name__ == "__main__":
-    run()
+    filename = "results.csv"
+    #calculate(filename)
+    plot(filename)
