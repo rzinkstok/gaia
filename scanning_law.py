@@ -102,7 +102,7 @@ def plot(filename):
 
     print "Plotting histogram"
     plt.figure(figsize=(7.8, 4))
-    plt.hist2d(plot_density_x, plot_density_y, (1200, 600), cmap=plt.cm.jet)
+    plt.hist2d(plot_density_x, plot_density_y, (1200, 940), cmap=plt.cm.jet)
     plt.colorbar()
     plt.xlim(-np.pi, np.pi)
     plt.ylim(-np.pi/2, np.pi/2)
