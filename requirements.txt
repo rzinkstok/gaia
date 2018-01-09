@@ -12,6 +12,7 @@ pyparsing==2.2.0
 pytest==3.3.1
 python-dateutil==2.6.1
 pytz==2017.3
+numpy-quaternion==2017.11.26.19.0.13
 scipy==1.0.0
 six==1.11.0
 subprocess32==3.2.7

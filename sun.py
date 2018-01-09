@@ -6,14 +6,14 @@ import sunpy.sun as sun
 EPOCH_J2000 = datetime.datetime(2000, 1, 1, 12, 0, 0)
 
 
-def days_since_epoch(d, epoch):
+def days_since_epoch(d, epoch=EPOCH_J2000):
     delta = d-epoch
     return delta.days + delta.seconds/86400.0
 
 
-def solar_apparent_longitude(dt):
+def solar_apparent_longitude(t):
     # From Lindgren SAG-LL-35, p. 10
-    t = days_since_epoch(dt, EPOCH_J2000)
+    # t is days since epoch J2000.0
 
     e = 0.016709
     a0 = np.deg2rad(280.458)
@@ -25,7 +25,7 @@ def solar_apparent_longitude(dt):
     g = g0 + g1 * t
 
     solar_longitude = a + 2 * e * np.sin(g) + 1.25 * e**2 * np.sin(2 * g)
-    solar_longitude = divmod(solar_longitude, 2 * np.pi)[1]
+    solar_longitude = np.divmod(solar_longitude, 2 * np.pi)[1]
     derivative_solar_longitude = a1 + (2 * e * np.cos(g) + 2 * 1.25 * e**2 * np.cos(2 * g)) * g1
     solar_distance = 1 - e * np.cos(g + e * np.sin(g) + 0.5 * e**2 * np.sin(2 * g))
 

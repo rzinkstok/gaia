@@ -2,11 +2,10 @@ import numpy as np
 from scipy.optimize import newton
 
 
-def cartesian2spherical(x, y, z):
-    # Theta is right ascension, phi is 90 - declination
-    r = np.sqrt(x**2 + y**2 + z**2)
-    phi = np.arccos(z/r)
-    theta = np.arctan2(y, x)
+def cartesian2spherical(v):
+    r = np.linalg.norm(v, axis=1)
+    phi = np.arccos(v[:, 2]/r)
+    theta = np.arctan2(v[:, 1], v[:, 0])
     return r, theta, phi
 
 
