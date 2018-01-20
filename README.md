@@ -26,7 +26,7 @@ The values of Ω(t) and ν(t) can be used to compute the direction of the line o
 
 
 ### Results
-When the instantaneous scan directions are projected using an Aitoff projection, and binned in 1200 by 940 bins, this is 
+When the instantaneous scan directions are projected using a Hammer projection, and binned in 1200 by 940 bins, this is 
 the resulting density map (using ecliptic coordinates):
 
 ![GAIA Nominal Scanning Law: sky coverage of Gaia](results.png?raw=true "The GAIA Nominal Scanning Law: sky coverage of Gaia")
