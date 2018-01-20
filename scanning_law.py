@@ -5,7 +5,7 @@ from scipy.integrate import odeint
 import datetime
 import time
 
-from projection import aitoff, cartesian2spherical
+from projection import hammer, cartesian2spherical
 from sun import solar_apparent_longitude, days_since_epoch
 
 
@@ -116,7 +116,7 @@ def plot_from_file(filename):
 
 
 def plot(thetas, phis):
-    plot_density_x, plot_density_y = aitoff(thetas, phis)
+    plot_density_x, plot_density_y = hammer(thetas, phis)
 
     print("Plotting histogram")
     plt.figure(figsize=(7.8, 4))
@@ -129,11 +129,12 @@ def plot(thetas, phis):
     plt.show()
 
 
-
 if __name__ == "__main__":
     filename = "results.csv"
-    #ts, theta2, phi2 = calculate(filename, datetime.datetime(2000, 1, 1, 0, 0, 0))
+    do_calc = False
+    if do_calc:
+        ts, theta2, phi2 = calculate(filename, datetime.datetime(2000, 1, 1, 0, 0, 0))
     if filename:
         plot_from_file(filename)
-    else:
+    elif do_calc:
         plot(theta2, phi2)

@@ -1,5 +1,6 @@
 import numpy as np
 import datetime
+import time
 import sunpy.sun as sun
 
 
@@ -37,6 +38,8 @@ def dms2rad(dms):
 
 
 def solar_apparent_longitude2(dt):
+    """Use sunpy for the apparent longitude; needs a datetime date."""
+
     deltat = datetime.timedelta(days=1)
     l = dms2rad(sun.apparent_longitude(dt).dms)
     l1 = dms2rad(sun.apparent_longitude(dt - deltat).dms)
@@ -46,6 +49,12 @@ def solar_apparent_longitude2(dt):
 
 
 if __name__ == "__main__":
-    d = datetime.datetime.now() + datetime.timedelta(days=0)
-    print solar_apparent_longitude(d)[1]
-    print solar_apparent_longitude2(d)[1]
+    dt = 0.0001
+    dt = 0.0001
+    tmax = 5 * 365.25
+    nt = int(round(tmax / dt)) + 1
+    t = np.linspace(0, tmax, nt)
+    t1 = time.clock()
+    solar_apparent_longitude(t)
+    print time.clock() - t1
+

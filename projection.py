@@ -31,3 +31,12 @@ def aitoff(longitude, latitude, central_meridian=0):
     x = 2 * np.cos(p) * np.sin(l) / a
     y = np.sin(p) / a
     return x, y
+
+
+def hammer(longitude, latitude, central_meridian=0):
+    l = (longitude - central_meridian) / 2.0
+    p = latitude
+    aa = np.sqrt(1 + np.cos(p) * np.cos(l))
+    x = 2*np.sqrt(2) * np.cos(p) * np.sin(l)/aa
+    y = np.sqrt(2) * np.sin(p)/aa
+    return x, y
